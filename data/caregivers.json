@@ -1,0 +1,50 @@
+[
+  {
+    "id": "cg-1",
+    "name": "Dr. Sarah Jenkins",
+    "role": "Doctor",
+    "phone": "+91 98765 43210",
+    "email": "s.jenkins@apollo.med",
+    "relationship": "Daughter & Lead Caregiver",
+    "notes": "Updated notes test via PUT",
+    "preferredContact": "Phone",
+    "shiftTiming": "Flexible",
+    "isOnline": true,
+    "isPrimary": true,
+    "isVerified": true,
+    "createdAt": "2026-01-15T08:30:00.000Z",
+    "updatedAt": "2026-10-10T12:39:29.329Z"
+  },
+  {
+    "id": "cg-2",
+    "name": "Nurse Priya Nair",
+    "role": "Nurse",
+    "phone": "+91 98450 12345",
+    "email": "priya.n@apollo.med",
+    "relationship": "Staff Nurse & Vital Monitor",
+    "notes": "Conducts weekly in-person home vitals checks and morning dosage verifications.",
+    "preferredContact": "Chat",
+    "shiftTiming": "Day Shift",
+    "isOnline": true,
+    "isPrimary": false,
+    "isVerified": true,
+    "createdAt": "2026-02-01T09:00:00.000Z",
+    "updatedAt": "2026-03-22T14:40:00.000Z"
+  },
+  {
+    "id": "cg-3",
+    "name": "Rahul Sharma",
+    "role": "Caregiver",
+    "phone": "+91 91234 56789",
+    "email": "rahul.care@gmail.com",
+    "relationship": "Primary Family Caregiver (Son)",
+    "notes": "Manages pharmacy refills and emergency escalations for evening doses.",
+    "preferredContact": "WhatsApp",
+    "shiftTiming": "On Call",
+    "isOnline": true,
+    "isPrimary": false,
+    "isVerified": true,
+    "createdAt": "2026-02-10T11:00:00.000Z",
+    "updatedAt": "2026-03-24T09:20:00.000Z"
+  }
+]

@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #080D19;
+    --bg-nav: #0B1220;
+    --bg-card: #111B2D;
+    --bg-elevated: #172338;
+    --border-subtle: #1E2D4A;
+    --primary-blue: #3B82F6;
+    --accent-cyan: #22D3EE;
+    --accent-purple: #A78BFA;
+    --success-green: #34D399;
+    --warning-amber: #FBBF24;
+    --error-coral: #F87171;
+  }
+
+  body {
+    background-color: #080D19;
+    color: #F8FAFC;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B1220;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E2D4A;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
+}
+
+@keyframes laserScan {
+  0% {
+    top: 5%;
+    opacity: 0.9;
+  }
+  50% {
+    top: 90%;
+    opacity: 0.95;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.9;
+  }
+}
+
+.animate-laser {
+  animation: laserScan 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(34, 211, 238, 0.45);
+  }
+}
+
+.glow-cyan {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+

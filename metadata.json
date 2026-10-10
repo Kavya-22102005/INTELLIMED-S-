@@ -1,0 +1,6 @@
+{
+  "name": "IntelliMed AI - Intelligent Medication Monitoring",
+  "description": "Intelligent Medication Monitoring and Assistance System featuring AI medicine scanning, gesture monitoring, prescription OCR, clinical adherence analytics, and caregiver portal.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

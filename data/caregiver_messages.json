@@ -1,0 +1,50 @@
+[
+  {
+    "id": "cmsg-1",
+    "caregiverId": "cg-2",
+    "patientId": "pat-1",
+    "senderId": "cg-2",
+    "senderName": "Nurse Priya Nair",
+    "senderRole": "caregiver",
+    "recipientId": "pat-1",
+    "text": "Good morning! Please make sure to take Metformin 500mg immediately after your breakfast today.",
+    "timestamp": "2026-10-10T08:10:36.306Z",
+    "deliveryStatus": "read"
+  },
+  {
+    "id": "cmsg-2",
+    "caregiverId": "cg-2",
+    "patientId": "pat-1",
+    "senderId": "pat-1",
+    "senderName": "Rajesh Kumar",
+    "senderRole": "patient",
+    "recipientId": "cg-2",
+    "text": "Thank you Sister Priya, dose logged successfully. Morning BP was 122/82 mmHg.",
+    "timestamp": "2026-10-10T08:40:36.307Z",
+    "deliveryStatus": "read"
+  },
+  {
+    "id": "cmsg-3",
+    "caregiverId": "cg-2",
+    "patientId": "pat-1",
+    "senderId": "cg-2",
+    "senderName": "Nurse Priya Nair",
+    "senderRole": "caregiver",
+    "recipientId": "pat-1",
+    "text": "Excellent numbers. Keep well hydrated in the afternoon.",
+    "timestamp": "2026-10-10T09:22:36.307Z",
+    "deliveryStatus": "delivered"
+  },
+  {
+    "id": "cmsg-4",
+    "caregiverId": "cg-1",
+    "patientId": "pat-1",
+    "senderId": "cg-1",
+    "senderName": "Dr. Sarah Jenkins",
+    "senderRole": "caregiver",
+    "recipientId": "pat-1",
+    "text": "Hello Rajesh, I reviewed your 14-day adherence graph. 94% compliance is solid. Let me know if you experience any mild dizziness from the evening Amlodipine.",
+    "timestamp": "2026-10-09T12:10:36.307Z",
+    "deliveryStatus": "read"
+  }
+]

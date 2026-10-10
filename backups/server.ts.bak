@@ -1,0 +1,213 @@
+import express, { Request, Response } from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import { GoogleGenAI } from '@google/genai';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = Number(process.env.PORT) || 3000;
+
+app.use(express.json());
+
+// Initialize Gemini Client
+const getGeminiClient = () => {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      },
+    },
+  });
+};
+
+interface MessagePart {
+  text: string;
+}
+
+interface HistoryMessage {
+  role: 'user' | 'model';
+  parts: MessagePart[];
+}
+
+interface PatientContextPayload {
+  name?: string;
+  age?: number;
+  condition?: string;
+  medications?: Array<{
+    name: string;
+    dosage?: string;
+    scheduledTime?: string;
+    status?: string;
+    inventory?: number;
+    reorderThreshold?: number;
+    instructions?: string;
+  }>;
+  vitals?: {
+    heartRate?: number;
+    bloodPressure?: string;
+    bloodGlucose?: number;
+    adherencePercentage?: number;
+    waterIntake?: number;
+  };
+  caregivers?: Array<{
+    name: string;
+    role: string;
+    phone: string;
+    email?: string;
+  }>;
+}
+
+// POST /api/voice-assistant
+app.post('/api/voice-assistant', async (req: Request, res: Response) => {
+  try {
+    const { message, conversationHistory = [], patientContext = {} } = req.body as {
+      message?: string;
+      conversationHistory?: HistoryMessage[];
+      patientContext?: PatientContextPayload;
+    };
+
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      res.status(400).json({ error: 'Message content is required.' });
+      return;
+    }
+
+    const ai = getGeminiClient();
+    if (!ai) {
+      res.status(503).json({
+        error: 'Gemini API key is not configured on the server. Please ensure GEMINI_API_KEY is provided.',
+        code: 'MISSING_API_KEY',
+      });
+      return;
+    }
+
+    // Build clinical context for patient
+    const medsSummary = (patientContext.medications || [])
+      .map(
+        (m) =>
+          `- ${m.name} (${m.dosage || 'standard dose'}): scheduled at ${m.scheduledTime || 'unspecified'}, status: ${
+            m.status || 'pending'
+          }, remaining stock: ${m.inventory ?? 'N/A'} (alert threshold: ${m.reorderThreshold ?? 10}). Instructions: ${
+            m.instructions || 'take with water'
+          }`
+      )
+      .join('\n');
+
+    const caregiversSummary = (patientContext.caregivers || [])
+      .map((c) => `- ${c.name} (${c.role}): Phone ${c.phone}${c.email ? `, Email ${c.email}` : ''}`)
+      .join('\n');
+
+    const vitalsSummary = patientContext.vitals
+      ? `Adherence Rate: ${patientContext.vitals.adherencePercentage ?? 92}%, Heart Rate: ${
+          patientContext.vitals.heartRate ?? 72
+        } bpm, Blood Pressure: ${patientContext.vitals.bloodPressure ?? '120/80'}, Blood Glucose: ${
+          patientContext.vitals.bloodGlucose ?? 95
+        } mg/dL, Water Intake: ${patientContext.vitals.waterIntake ?? 1.5} L.`
+      : 'Vitals normal, adherence around 92%.';
+
+    const systemInstruction = `You are IntelliMed AI's Clinical Voice Assistant, speaking directly with patient ${
+      patientContext.name || 'User'
+    }.
+Your answers are read aloud via text-to-speech, so follow these speech guidelines:
+1. Speak in a warm, concise, conversational, and articulate manner (typically 2 to 4 sentences).
+2. Avoid markdown tables, long bulleted lists, code blocks, or special formatting symbols that sound awkward when synthesized aloud.
+3. Ground your responses strictly in the patient's actual real-time records:
+PATIENT SCHEDULE & MEDICATIONS:
+${medsSummary || 'No active medications registered.'}
+
+CURRENT VITALS & CLINICAL ADHERENCE:
+${vitalsSummary}
+
+ASSIGNED CAREGIVERS & CLINICAL TEAM:
+${caregiversSummary || 'No caregivers assigned.'}
+
+SAFETY & ETHICAL RULES:
+- Never diagnose medical illnesses or diseases.
+- Never prescribe medication or recommend stopping or changing dosages of prescribed medicines.
+- For medical concerns, symptoms of distress, or advice to change a prescription, warmly advise contacting their assigned doctor or caregiver.
+- Answer accurately regarding: which medications they need to take today, what time doses are scheduled, whether they have taken a dose, inventory count and refills, vitals tracking, and how to use the YOLO camera scanner or gesture monitor.`;
+
+    // Format chat contents
+    const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+
+    // Add recent history (up to last 6 turns for context)
+    const recentHistory = conversationHistory.slice(-6);
+    for (const h of recentHistory) {
+      if (h.role === 'user' || h.role === 'model') {
+        const text = h.parts?.[0]?.text;
+        if (text) {
+          contents.push({
+            role: h.role,
+            parts: [{ text }],
+          });
+        }
+      }
+    }
+
+    // Add latest user query
+    contents.push({
+      role: 'user',
+      parts: [{ text: message.trim() }],
+    });
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents,
+      config: {
+        systemInstruction,
+        temperature: 0.6,
+      },
+    });
+
+    const replyText = response.text || "I'm sorry, I couldn't process your request at this moment.";
+
+    res.json({
+      reply: replyText,
+      status: 'success',
+      model: 'gemini-3.8-flash',
+    });
+  } catch (error: any) {
+    console.error('Gemini Voice Assistant Error:', error);
+    res.status(500).json({
+      error: error?.message || 'An error occurred while generating a response from Gemini AI.',
+      code: 'GEMINI_GENERATION_ERROR',
+    });
+  }
+});
+
+// Health check endpoint
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
+// Dev vs Prod Vite handling
+async function startServer() {
+  if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    app.use(express.static(path.resolve(__dirname, 'dist')));
+    app.get('*', (req: Request, res: Response) => {
+      res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`IntelliMed AI server listening on http://0.0.0.0:${PORT}`);
+  });
+}
+
+startServer();
